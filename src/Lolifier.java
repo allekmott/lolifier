@@ -36,7 +36,7 @@ public class Lolifier implements Runnable {
 	 * The current application version number.
 	 * @since 0.0.2
 	 **/
-	public static final String VERSION_NO = "0.0.3";
+	public static final String VERSION_NO = "0.0.4";
 
 	/**
 	 * Default constructor... yeah.
@@ -53,6 +53,31 @@ public class Lolifier implements Runnable {
 	public static void main(String args[]) {
 		LolifierFrame frame = new LolifierFrame();
 		frame.setVisible(true);
+	}
+
+	/**
+	 * Generates a loline with the provide loline size.
+	 * @since 0.0.4
+	 **/
+	public String genLoline(int num_los) {
+		String loline = "";
+		for (int lo = 0; lo < num_los; lo++) {
+			loline += "lo";
+		}
+		loline += "l";
+		return loline;
+	}
+
+	/**
+	 * Calculates the maximum number of lolines that "fit"
+	 * into a provided byte size.
+	 * @since 0.0.4
+	 * @param size The size to fit lolines into
+	 * @return The number of lolines that can fit into the
+	 * provided size.
+	 **/
+	public int numLolines(long size) {
+		// TODO this
 	}
 
 	/**
