@@ -39,6 +39,12 @@ public class Lolifier implements Runnable {
 	 **/
 	double numToWrite;
 
+	/**
+	 * What to multiply numToWrite by.
+	 * @since 0.0.4.3
+	 **/
+	ByteMultiplier multiplier;
+
 	// TODO Add speed sample things.
 
 	/**
@@ -52,7 +58,7 @@ public class Lolifier implements Runnable {
 	 * The current application version number.
 	 * @since 0.0.2
 	 **/
-	public static final String VERSION_NO = "0.0.4.2";
+	public static final String VERSION_NO = "0.0.4.3";
 
 	/**
 	 * Default constructor... yeah.
@@ -67,6 +73,7 @@ public class Lolifier implements Runnable {
 	 * @since 0.0.1
 	 **/
 	public static void main(String args[]) {
+		log("Lolifier v" + VERSION_NO);
 		LolifierFrame frame = new LolifierFrame();
 		frame.setVisible(true);
 	}
@@ -115,18 +122,30 @@ public class Lolifier implements Runnable {
 	 * @since 0.0.1
 	 **/
 	public void run() {
-		log("Lolifier v" + VERSION_NO);
 
-		// since 0.0.4.2
+		// since 0.0.4.3
 
+	}
 
+	// le getters and setters
+	public void setMultiplier(ByteMultiplier _multiplier) {
+		multiplier = _multiplier;
+	}
+	public void setNumToWrite(double _numToWrite) {
+		numToWrite = _numToWrite;
+	}
+	public ByteMultiplier getMultiplier() {
+		return multiplier;
+	}
+	public double getNumToWrite() {
+		return numToWrite;
 	}
 
 	/**
 	 * Because one comes to miss the laziness of using IDES...
 	 * @since 0.0.2
 	 **/
-	public void log(String msg) {
-		log.println();
+	public static void log(String msg) {
+		System.out.println(msg);
 	}
 }
