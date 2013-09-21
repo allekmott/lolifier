@@ -1,4 +1,4 @@
 lolifier
 ========
 
-The tool for ultimate hard disk trollery.
+The ultimate tool for hard disk trollery.
