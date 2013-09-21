@@ -1,9 +1,16 @@
+/*
+ * LolifierFrame.java
+ * Created: 17-09-2013
+ */
+
 import javax.swing.JFrame;
 
 /**
  * Separate GUI stuff to promote modularity
  * = LolifierFrame being JFrame instead of
  * Lolifier.
+ * @author Allek Mott
+ * @since 0.0.3
  **/
 public class LolifierFrame extends JFrame {
 	public LolifierFrame() {

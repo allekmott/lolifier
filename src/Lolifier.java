@@ -11,7 +11,7 @@
 import java.io.PrintStream;
 
 /**
- * @author Allek
+ * @author Allek Mott
  * @since 0.0.0
  **/
 public class Lolifier implements Runnable {
@@ -22,6 +22,7 @@ public class Lolifier implements Runnable {
 	 * @since 0.0.1
 	 **/
 	public static final int LOLINE_LOS = 100;
+	public static String DEFAULT_LOLINE = genLoline(LOLINE_LOS);
 
 	// TODO Add speed sample things.
 
@@ -59,7 +60,7 @@ public class Lolifier implements Runnable {
 	 * Generates a loline with the provide loline size.
 	 * @since 0.0.4
 	 **/
-	public String genLoline(int num_los) {
+	public static String genLoline(int num_los) {
 		String loline = "";
 		for (int lo = 0; lo < num_los; lo++) {
 			loline += "lo";
@@ -76,8 +77,22 @@ public class Lolifier implements Runnable {
 	 * @return The number of lolines that can fit into the
 	 * provided size.
 	 **/
-	public int numLolines(long size) {
-		// TODO this
+	public static int numLolines(long size) {
+		int lineByteLen = DEFAULT_LOLINE.length();
+		return (int) (size / lineByteLen);
+	}
+
+	/**
+	 * Calculates the number of bytes left to write after
+	 * the max number of lolines have been written.
+	 * @since 0.0.4
+	 * @param size The number of bytes being written
+	 * @return The number of bytes left after lolines have
+	 * been written.
+	 **/
+	public static int numBytesLeft(long size) {
+		int lineByteLen = DEFAULT_LOLINE.length();
+		return (int) (size - (numLolines(size) * lineByteLen));
 	}
 
 	/**
@@ -86,6 +101,9 @@ public class Lolifier implements Runnable {
 	 **/
 	public void run() {
 		log("Lolifier v" + VERSION_NO);
+
+		// since 0.0.4
+
 	}
 
 	/**
