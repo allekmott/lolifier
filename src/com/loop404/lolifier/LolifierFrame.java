@@ -3,6 +3,8 @@
  * Created: 17-09-2013
  */
 
+package com.loop404.lolifier;
+
 import javax.swing.JFrame;
 
 /**

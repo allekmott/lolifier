@@ -8,6 +8,8 @@
  * disk who writes what said word describes.
  */
 
+package com.loop404.lolifier;
+
 import java.io.PrintStream;
 
 /**
@@ -22,7 +24,20 @@ public class Lolifier implements Runnable {
 	 * @since 0.0.1
 	 **/
 	public static final int LOLINE_LOS = 100;
+
+	/**
+	 * Loline of default length.
+	 * @since 0.0.4.1
+	 **/
 	public static String DEFAULT_LOLINE = genLoline(LOLINE_LOS);
+
+
+	/**
+	 * Number of bytes (or of bytes * multiplier) to write.
+	 * Will be rounded if multiplier is 1.
+	 * @since 0.0.4.2
+	 **/
+	double numToWrite;
 
 	// TODO Add speed sample things.
 
@@ -37,7 +52,7 @@ public class Lolifier implements Runnable {
 	 * The current application version number.
 	 * @since 0.0.2
 	 **/
-	public static final String VERSION_NO = "0.0.4";
+	public static final String VERSION_NO = "0.0.4.2";
 
 	/**
 	 * Default constructor... yeah.
@@ -102,7 +117,8 @@ public class Lolifier implements Runnable {
 	public void run() {
 		log("Lolifier v" + VERSION_NO);
 
-		// since 0.0.4
+		// since 0.0.4.2
+
 
 	}
 

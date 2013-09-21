@@ -1,8 +1,14 @@
+/*
+ * ByteMultiplier.java
+ * Created: 18-09-2013
+ */
+package com.loop404.lolifier;
+
 /**
  * Fancy-pants enum for defining byte multipliers.
  * Used to allow for specifiying loltastic file sizes.
- * @since 0.0.4
- * @autho;r Allek Mott
+ * @since 0.0.4.1
+ * @author Allek Mott
  **/
 public enum ByteMultiplier {
 	// Pretty self-explanatory, byte multipliers
@@ -21,7 +27,7 @@ public enum ByteMultiplier {
 		index = _index;
 		text = _text;
 		abbreviation = _abbreviation;
-		conversionFactor = _conversionFactor
+		conversionFactor = _conversionFactor;
 	}
 
 	// Fancy enum getters
@@ -41,7 +47,7 @@ public enum ByteMultiplier {
 	/**
 	 * Attempts to pick out a byte multiplier from a provided
 	 * string.
-	 * @since 0.0.4
+	 * @since 0.0.4.1
 	 * @param txt String to be looked at
 	 * @return ByteMultiplier divulged from string. If attempt
 	 * fails, returns BYTE by default.
@@ -88,5 +94,20 @@ public enum ByteMultiplier {
 		return mult;
 	}
 
-
+	/**
+	 * Returns the ByteMultiplier with the provide index.
+	 * @since 0.0.4.2
+	 * @return ByteMultiplier The ByteMultiplier with the
+	 * provided index. Returns BYTE by default.
+	 **/
+	public ByteMultiplier getMultiplier(byte index) {
+		switch (index) {
+			case (byte) 0: return ByteMultiplier.BYTE;
+			case (byte) 1: return ByteMultiplier.KILOBYTE;
+			case (byte) 2: return ByteMultiplier.MEGABYTE;
+			case (byte) 3: return ByteMultiplier.GIGABYTE;
+			case (byte) 4: return ByteMultiplier.TERABYTE;
+			default: return ByteMultiplier.BYTE;
+		}
+	}
 }
