@@ -10,6 +10,6 @@ cd bin
 
 if [ $# -gt 0 ]; then
 	java com.loop404.lolifier.Lolifier $1
+else
+	java com.loop404.lolifier.Lolifier
 fi
-
-java com.loop404.lolifier.Lolifier

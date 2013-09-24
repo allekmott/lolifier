@@ -18,6 +18,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.File;
 
+import java.text.DecimalFormat;
+
 /**
  * @author Allek Mott
  * @since 0.0.0
@@ -58,6 +60,19 @@ public class Lolifier implements Runnable {
 	 **/
 	ByteMultiplier multiplier = ByteMultiplier.BYTE;
 
+	/**
+	 * The time (nanoseconds) at which the writing process
+	 * started.
+	 * @since 0.0.5.1
+	 **/
+	long writeStartTime;
+
+	/**
+	 * The time at which the writing process completed.
+	 * @since 0.0.5.1
+	 **/
+	long writeEndTime;
+
 	// TODO Add speed sample things.
 
 	/**
@@ -71,7 +86,7 @@ public class Lolifier implements Runnable {
 	 * The current application version number.
 	 * @since 0.0.2
 	 **/
-	public static final String VERSION_NO = "0.0.5";
+	public static final String VERSION_NO = "0.0.5.1";
 
 	/**
 	 * Default constructor... yeah.
@@ -92,18 +107,20 @@ public class Lolifier implements Runnable {
 			switch (args[0].charAt(1)) {
 				case 'c':
 					commandLineMode();
-					return;
+					break;
 			}
+		} else {
+			log("No options specified, default mode activated.");
+			// Temporary, for debugging purposes.
+			Lolifier lol = new Lolifier();
+			lol.setNumToWrite(20);
+			lol.setMultiplier(ByteMultiplier.KILOBYTE);
+			lol.run();
 		}
 
 		/*LolifierFrame frame = new LolifierFrame();
 		frame.setVisible(true);*/
 
-		// Temporary, for debugging purposes.
-		Lolifier lol = new Lolifier();
-		lol.setNumToWrite(20);
-		lol.setMultiplier(ByteMultiplier.KILOBYTE);
-		lol.run();
 	}
 
 	/**
@@ -332,6 +349,38 @@ public class Lolifier implements Runnable {
 	}
 	public String getFileName() {
 		return this.fileName;
+	}
+
+	/**
+	 * Calculates the elapsed time since the write started.
+	 * @since 0.0.5.1
+	 * @return The time elapsed (ns)
+	 **/
+	public long getElapsedTime() {
+		return (System.nanoTime() - writeStartTime);
+	}
+
+	/**
+	 * Formats and makes the provided time human-readable.
+	 * @since 0.0.5.1
+	 * @param time The provided time (ns)
+	 * @return The human-readable time
+	 **/
+	public static String formattedTime(long time) {
+		String time_s, abb;
+		double new_t;
+		if ((time / 60000000000) >= 1) {
+			abb = "min";
+			new_t = (double) (time / 60000000000.0);
+		} else if ((time / 1000000000) >= 1) {
+			abb = "s";
+			new_t = (double) (time / 1000000000.0);
+		} else {
+			abb = "ms";
+			new_t = (double) (time / 1000000.0);
+		}
+		DecimalFormat df = new DecimalFormat("#.##");
+		time_s = df.format(new_t) + " " + abb;
 	}
 
 	/**
