@@ -97,7 +97,7 @@ public enum ByteMultiplier {
 	/**
 	 * Returns the ByteMultiplier with the provide index.
 	 * @since 0.0.4.2
-	 * @return ByteMultiplier The ByteMultiplier with the
+	 * @return The ByteMultiplier with the
 	 * provided index. Returns BYTE by default.
 	 **/
 	public ByteMultiplier getMultiplier(byte index) {
@@ -109,5 +109,16 @@ public enum ByteMultiplier {
 			case (byte) 4: return ByteMultiplier.TERABYTE;
 			default: return ByteMultiplier.BYTE;
 		}
+	}
+
+	/**
+	 * Returns the number of bytes that correspond to the
+	 * provided quantity, multiplied by the conversion factor.
+	 * @since 0.0.4.4
+	 * @param The provided quantity.
+	 * @return bytes The total number of bytes.
+	 **/
+	public long numBytes(double quantity) {
+		return (long) (quantity * conversionFactor);
 	}
 }

@@ -33,17 +33,24 @@ public class Lolifier implements Runnable {
 
 
 	/**
+	 * The file (or path to and file) to write
+	 * (defaults to lol.txt).
+	 * @since 0.0.4.4
+	 **/
+	String fileName = "lol.txt";
+
+	/**
 	 * Number of bytes (or of bytes * multiplier) to write.
 	 * Will be rounded if multiplier is 1.
 	 * @since 0.0.4.2
 	 **/
-	double numToWrite;
+	double numToWrite = 10;
 
 	/**
 	 * What to multiply numToWrite by.
 	 * @since 0.0.4.3
 	 **/
-	ByteMultiplier multiplier;
+	ByteMultiplier multiplier = ByteMultiplier.BYTE;
 
 	// TODO Add speed sample things.
 
@@ -52,7 +59,7 @@ public class Lolifier implements Runnable {
 	 * be attached to GUI window.
 	 * @since 0.0.3
 	 **/
-	PrintStream log = System.out;
+	static PrintStream log = System.out;
 
 	/**
 	 * The current application version number.
@@ -74,17 +81,23 @@ public class Lolifier implements Runnable {
 	 **/
 	public static void main(String args[]) {
 		log("Lolifier v" + VERSION_NO);
-		LolifierFrame frame = new LolifierFrame();
-		frame.setVisible(true);
+		/*LolifierFrame frame = new LolifierFrame();
+		frame.setVisible(true);*/
+
+		// Temporary, for debugging purposes.
+		Lolifier lol = new Lolifier();
+		lol.setNumToWrite(2.5);
+		lol.setMultiplier(ByteMultiplier.GIGABYTE);
+		lol.run();
 	}
 
 	/**
 	 * Generates a loline with the provide loline size.
 	 * @since 0.0.4
 	 **/
-	public static String genLoline(int num_los) {
+	public static String genLoline(int numLos) {
 		String loline = "";
-		for (int lo = 0; lo < num_los; lo++) {
+		for (int lo = 0; lo < numLos; lo++) {
 			loline += "lo";
 		}
 		loline += "l";
@@ -95,13 +108,13 @@ public class Lolifier implements Runnable {
 	 * Calculates the maximum number of lolines that "fit"
 	 * into a provided byte size.
 	 * @since 0.0.4
-	 * @param size The size to fit lolines into
+	 * @param bytes The size to fit lolines into
 	 * @return The number of lolines that can fit into the
 	 * provided size.
 	 **/
-	public static int numLolines(long size) {
+	public static int numLolines(long bytes) {
 		int lineByteLen = DEFAULT_LOLINE.length();
-		return (int) (size / lineByteLen);
+		return (int) (bytes / lineByteLen);
 	}
 
 	/**
@@ -122,8 +135,15 @@ public class Lolifier implements Runnable {
 	 * @since 0.0.1
 	 **/
 	public void run() {
+		// since 0.0.4.4
+		log("Lolifier started.");
+		log("File to write: " + fileName);
+		log("File size: " + numToWrite +
+			multiplier.abbreviation());
 
-		// since 0.0.4.3
+		long numBytes = multiplier.numBytes(numToWrite);
+		log("\t(in bytes): " + numBytes);
+		log("\t(# lolines): " + numLolines(numBytes));
 
 	}
 
@@ -146,6 +166,6 @@ public class Lolifier implements Runnable {
 	 * @since 0.0.2
 	 **/
 	public static void log(String msg) {
-		System.out.println(msg);
+		log.println(msg);
 	}
 }
