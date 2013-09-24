@@ -11,6 +11,10 @@
 package com.loop404.lolifier;
 
 import java.io.PrintStream;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.File;
 
 /**
  * @author Allek Mott
@@ -23,7 +27,7 @@ public class Lolifier implements Runnable {
 	 * be followed by ending 'l').
 	 * @since 0.0.1
 	 **/
-	public static final int LOLINE_LOS = 100;
+	public static final int LOLINE_LOS = 120;
 
 	/**
 	 * Loline of default length.
@@ -86,8 +90,8 @@ public class Lolifier implements Runnable {
 
 		// Temporary, for debugging purposes.
 		Lolifier lol = new Lolifier();
-		lol.setNumToWrite(2.5);
-		lol.setMultiplier(ByteMultiplier.GIGABYTE);
+		lol.setNumToWrite(20);
+		lol.setMultiplier(ByteMultiplier.KILOBYTE);
 		lol.run();
 	}
 
@@ -100,7 +104,7 @@ public class Lolifier implements Runnable {
 		for (int lo = 0; lo < numLos; lo++) {
 			loline += "lo";
 		}
-		loline += "l";
+		loline += "l\n";
 		return loline;
 	}
 
@@ -131,34 +135,141 @@ public class Lolifier implements Runnable {
 	}
 
 	/**
+	 * Calculates the number of bytes left to write after
+	 * the possible number of lolines has been exhausted.
+	 * @since 0.0.4.5
+	 * @param size The number of bytes to be written
+	 * @return The number of bytes remaining.
+	 **/
+	public static int calcByteRemainder(long size) {
+		long lolineBytes = DEFAULT_LOLINE.length();
+		return (int) (size % lolineBytes);
+	}
+
+	/**
+	 * Log info on what will be written.
+	 * @since 0.0.4.5
+	 **/
+	public void logWriteInfo() {
+		log("File to write: " + this.fileName);
+		log("File size: " + this.numToWrite +
+			this.multiplier.abbreviation());
+
+		long numBytes = this.multiplier.numBytes(numToWrite);
+		int numLines = numLolines(numBytes);
+		int byteRemainder = calcByteRemainder(numBytes);
+		log("\tTotal # bytes: " + numBytes);
+		log("\t# Lolines: " + numLines);
+		log("\t# Bytes leftover: " + byteRemainder);
+	}
+
+	/**
+	 * Write lolines to file.
+	 * @since 0.0.4.5
+	 * @param out The BufferedWriter attached to the file.
+	 * @param numBytes The number of bytes to be written.
+	 **/
+	public void writeLolines(BufferedWriter out, long numBytes)
+			throws IOException {
+		int numLines = numLolines(numBytes);
+		log("Writing lolines");
+		try {
+			for (int line = 0; line < numLines; line++) {
+				if (line != 0 && line % 5000 == 0)
+					log("Wrote " + line + " lines.");
+				out.write(DEFAULT_LOLINE);
+			}
+		} catch (IOException e) {
+			throw e;
+		}
+		log("Done.");
+	}
+
+	/**
+	 * Write remaining bytes (in form of "lol"s) to file.
+	 * @since 0.0.4.5
+	 * @param out The BufferedWriter attached to the file.
+	 * @param numBytes The total number of bytes to be written.
+	 **/
+	public void writeRemainingBytes(BufferedWriter out, long numBytes)
+			throws IOException {
+		log("Writing remaining bytes");
+		int numRemaining = calcByteRemainder(numBytes);
+		String finalLine = "l";
+
+		if (numRemaining % 3 == 0) {
+			for (int x = 2; x < numRemaining; x += 3)
+				finalLine += "olo";
+		} else if (numRemaining % 2 == 0) {
+			finalLine = "lo";
+			for (int x = 3; x < numRemaining; x += 2)
+				finalLine += "lo";
+		} else {
+			finalLine += "o";
+		}
+		finalLine += "l";
+
+		try {
+			out.write(finalLine + "\n");
+		} catch (IOException e) {
+			throw e;
+		}
+		log("Done.");
+	}
+
+	/**
 	 * Thread that stuff.
 	 * @since 0.0.1
 	 **/
 	public void run() {
-		// since 0.0.4.4
+		BufferedWriter out = null;
+
 		log("Lolifier started.");
-		log("File to write: " + fileName);
-		log("File size: " + numToWrite +
-			multiplier.abbreviation());
 
-		long numBytes = multiplier.numBytes(numToWrite);
-		log("\t(in bytes): " + numBytes);
-		log("\t(# lolines): " + numLolines(numBytes));
+		// since 0.0.4.4
+		logWriteInfo();
 
+		// since 0.0.4.5
+		log("\nInitializing file");
+		File file = new File(fileName);
+		if (!file.exists()) {
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				die("could not create file");
+			}
+		}
+
+		try {
+			out = new BufferedWriter(new FileWriter(file));
+
+			long numBytes = multiplier.numBytes(this.numToWrite);
+			int byteRemainder = calcByteRemainder(numBytes);
+
+			// write lines
+			writeLolines(out, numBytes);
+
+			// write remaining bytes
+			writeRemainingBytes(out, numBytes);
+
+			out.close();
+		} catch (IOException e) {
+			die("while writing to file: " + e.getMessage());
+		}
 	}
 
 	// le getters and setters
-	public void setMultiplier(ByteMultiplier _multiplier) {
-		multiplier = _multiplier;
+	public void setMultiplier(ByteMultiplier multiplier) {
+		this.multiplier = multiplier;
 	}
-	public void setNumToWrite(double _numToWrite) {
-		numToWrite = _numToWrite;
+	public void setNumToWrite(double numToWrite) {
+		this.numToWrite = numToWrite;
 	}
 	public ByteMultiplier getMultiplier() {
-		return multiplier;
+		return this.multiplier;
 	}
 	public double getNumToWrite() {
-		return numToWrite;
+		return this.numToWrite;
 	}
 
 	/**
@@ -167,5 +278,15 @@ public class Lolifier implements Runnable {
 	 **/
 	public static void log(String msg) {
 		log.println(msg);
+	}
+
+	/**
+	 * Barfs an error message and exits.
+	 * @param msg The error message
+	 * @since 0.0.4.5
+	 **/
+	public static void die(String msg) {
+		log.println("An error occurred: " + msg + ".");
+		System.exit(1);
 	}
 }

@@ -13,8 +13,3 @@ fi
 cd src
 echo "Compiling source"
 javac -d ../bin com/loop404/lolifier/*.java
-
-echo "Attempting to run..."
-clear
-cd ..
-./run.sh
