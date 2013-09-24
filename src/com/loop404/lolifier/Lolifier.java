@@ -73,6 +73,13 @@ public class Lolifier implements Runnable {
 	 **/
 	long writeEndTime;
 
+	/**
+	 * Whether or not the lolines will be broken (be appended
+	 * with a newline character).
+	 * @since 0.0.5.2
+	 **/
+	static final boolean BROKEN_LOLINES = false;
+
 	// TODO Add speed sample things.
 
 	/**
@@ -176,7 +183,9 @@ public class Lolifier implements Runnable {
 		for (int lo = 0; lo < numLos; lo++) {
 			loline += "lo";
 		}
-		loline += "l\n";
+		loline += "l";
+		if (BROKEN_LOLINES)
+			loline += "\n";
 		return loline;
 	}
 
@@ -244,7 +253,7 @@ public class Lolifier implements Runnable {
 	public void writeLolines(BufferedWriter out, long numBytes)
 			throws IOException {
 		int numLines = numLolines(numBytes);
-		log("Writing lolines");
+		log("Writing lolines...");
 		try {
 			for (int line = 0; line < numLines; line++) {
 				if (line != 0 && line % 5000 == 0)
@@ -265,24 +274,30 @@ public class Lolifier implements Runnable {
 	 **/
 	public void writeRemainingBytes(BufferedWriter out, long numBytes)
 			throws IOException {
-		log("Writing remaining bytes");
+		log("Writing remaining bytes...");
 		int numRemaining = calcByteRemainder(numBytes);
-		String finalLine = "l";
+		String finalLine;
 
-		if (numRemaining % 3 == 0) {
-			for (int x = 2; x < numRemaining; x += 3)
-				finalLine += "olo";
-		} else if (numRemaining % 2 == 0) {
+		if (numRemaining == 1)
+			finalLine = "l";
+		else if (numRemaining == 2)
 			finalLine = "lo";
-			for (int x = 3; x < numRemaining; x += 2)
-				finalLine += "lo";
-		} else {
-			finalLine += "o";
+		else if (numRemaining == 3)
+			finalLine = "lol";
+		else {
+			finalLine = "l";
+			for (int c = 1; c < numRemaining; c++) {
+				if (c % 2 == 0)
+					finalLine += "l";
+				else
+					finalLine += "o";
+			}
 		}
-		finalLine += "l";
+
+		log("Writing " + finalLine.length() + " bytes...");
 
 		try {
-			out.write(finalLine + "\n");
+			out.write(finalLine);
 		} catch (IOException e) {
 			throw e;
 		}
@@ -312,6 +327,8 @@ public class Lolifier implements Runnable {
 			}
 		}
 
+		this.writeStartTime = System.nanoTime();
+
 		try {
 			out = new BufferedWriter(new FileWriter(file));
 
@@ -328,6 +345,11 @@ public class Lolifier implements Runnable {
 		} catch (IOException e) {
 			die("while writing to file: " + e.getMessage());
 		}
+
+		this.writeEndTime = System.nanoTime();
+
+		String elapsed_s = formattedTime(getElapsedTime());
+		log("Elapsed time: " + elapsed_s);
 	}
 
 	// le getters and setters
@@ -369,10 +391,10 @@ public class Lolifier implements Runnable {
 	public static String formattedTime(long time) {
 		String time_s, abb;
 		double new_t;
-		if ((time / 60000000000) >= 1) {
+		if ((time / 60000000000.0) >= 1) {
 			abb = "min";
 			new_t = (double) (time / 60000000000.0);
-		} else if ((time / 1000000000) >= 1) {
+		} else if ((time / 1000000000.0) >= 1) {
 			abb = "s";
 			new_t = (double) (time / 1000000000.0);
 		} else {
@@ -381,6 +403,7 @@ public class Lolifier implements Runnable {
 		}
 		DecimalFormat df = new DecimalFormat("#.##");
 		time_s = df.format(new_t) + " " + abb;
+		return time_s;
 	}
 
 	/**
