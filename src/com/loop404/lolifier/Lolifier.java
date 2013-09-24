@@ -12,6 +12,8 @@ package com.loop404.lolifier;
 
 import java.io.PrintStream;
 import java.io.BufferedWriter;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.File;
@@ -69,7 +71,7 @@ public class Lolifier implements Runnable {
 	 * The current application version number.
 	 * @since 0.0.2
 	 **/
-	public static final String VERSION_NO = "0.0.4.3";
+	public static final String VERSION_NO = "0.0.5";
 
 	/**
 	 * Default constructor... yeah.
@@ -85,6 +87,15 @@ public class Lolifier implements Runnable {
 	 **/
 	public static void main(String args[]) {
 		log("Lolifier v" + VERSION_NO);
+
+		if (args.length == 1) {
+			switch (args[0].charAt(1)) {
+				case 'c':
+					commandLineMode();
+					return;
+			}
+		}
+
 		/*LolifierFrame frame = new LolifierFrame();
 		frame.setVisible(true);*/
 
@@ -93,6 +104,50 @@ public class Lolifier implements Runnable {
 		lol.setNumToWrite(20);
 		lol.setMultiplier(ByteMultiplier.KILOBYTE);
 		lol.run();
+	}
+
+	/**
+	 * Run command line mode (prompt user for options at
+	 * the command line).
+	 * @since 0.0.5
+	 **/
+	static void commandLineMode() {
+		log("Command mode initialized.");
+
+		try {
+			BufferedReader in = new BufferedReader(
+					new InputStreamReader(System.in));
+
+			System.out.print("What size to write? (mb, gb): ");
+			String mult_s = in.readLine();
+			ByteMultiplier bm = ByteMultiplier.strToMultiplier(mult_s);
+		
+			System.out.print("How much would you like to write? ");
+			String num_s = in.readLine();
+			double num = Double.parseDouble(num_s);
+
+			System.out.print("Where would you like to write this? ");
+			String path = in.readLine();
+			if (path.length() == 0) {
+				log("Path null, defaulting to lol.txt.");
+				path = "lol.txt";
+			}
+
+			Lolifier lol = new Lolifier();
+			lol.setMultiplier(bm);
+			lol.setNumToWrite(num);
+			lol.setFileName(path);
+
+			lol.run();
+		} catch (NumberFormatException e) {
+			System.out.println("Really dude, enter a number.");
+			System.exit(0);
+		} catch (IOException e) {
+			die("could not process input");
+		}
+
+		log("Finished.");
+		System.exit(0);
 	}
 
 	/**
@@ -265,11 +320,18 @@ public class Lolifier implements Runnable {
 	public void setNumToWrite(double numToWrite) {
 		this.numToWrite = numToWrite;
 	}
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
 	public ByteMultiplier getMultiplier() {
 		return this.multiplier;
 	}
 	public double getNumToWrite() {
 		return this.numToWrite;
+	}
+	public String getFileName() {
+		return this.fileName;
 	}
 
 	/**
