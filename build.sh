@@ -10,6 +10,8 @@ if [ ! -d "bin" ]; then
 	mkdir bin
 fi
 
+# lol a comment
+
 cd src
 echo "Compiling source"
 javac -d ../bin com/loop404/lolifier/*.java
