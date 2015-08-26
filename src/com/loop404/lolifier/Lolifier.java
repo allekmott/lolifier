@@ -93,7 +93,7 @@ public class Lolifier implements Runnable {
 	 * The current application version number.
 	 * @since 0.0.2
 	 **/
-	public static final String VERSION_NO = "0.0.5.1";
+	public static final String VERSION_NO = "0.0.5.2";
 
 	/**
 	 * Default constructor... yeah.
@@ -183,9 +183,9 @@ public class Lolifier implements Runnable {
 		for (int lo = 0; lo < numLos; lo++) {
 			loline += "lo";
 		}
-		loline += "l";
+
 		if (BROKEN_LOLINES)
-			loline += "\n";
+			loline += "l\n";
 		return loline;
 	}
 
