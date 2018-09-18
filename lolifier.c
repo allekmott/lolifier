@@ -38,10 +38,10 @@ static int usage(const char *cmd) {
 "\n"
 "Options:\n"
 "-------\n"
-"-o  <file>        Write output to <file>\n"
-"-u  <unit>        Desired size unit (default b); b | k[b] | m[b] | g[b]\n"
-"-s  <bytes>       Number of units to be written (bytes by default)\n"
-"-b  <size>        Buffer size in bytes (>1)\n", cmd);
+"-o <file>  Write output to <file>\n"
+"-u <unit>  Desired size unit (default b); b | k[b] | m[b] | g[b]\n"
+"-s <bytes  Number of units to be written (bytes by default)\n"
+"-b <size>  Buffer size in bytes (>1)\n", cmd);
 
 	return 0;
 }
