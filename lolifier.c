@@ -16,7 +16,8 @@
 
 static long lolify(int fd, long file_size, int buffer_size);
 
-static int is_uint_string(const char *s_int);
+static int parse_int(const char *s_int);
+static float parse_float(const char *s_float);
 static int parse_multiplier(const char *s_multiplier);
 static char *generate_buffer(size_t size);
 
@@ -49,9 +50,10 @@ static int usage(const char *cmd) {
 int main(int argc, char *argv[]) {
 	int fd;
 	const char *file_name;
-	long file_size;
 	int buffer_size, multiplier;
 
+	float n_units;
+	long file_size;
 	long bytes_written;
 
 	char flag;
@@ -60,7 +62,7 @@ int main(int argc, char *argv[]) {
 	const char *cmd = argv[0];
 
 	file_name = NULL;
-	file_size = 0;
+	n_units = -1.0f;
 
 	buffer_size = DEFAULT_BUFFER_SIZE;
 	multiplier = 1;
@@ -78,27 +80,17 @@ int main(int argc, char *argv[]) {
 				}
 				break;
 			case 's':
-				if (!is_uint_string(optarg)) {
-					fprintf(stderr, "Invalid file size: %s\n", optarg);
+				n_units = parse_float(optarg);
+				if (n_units <= 0.0f) {
+					fprintf(stderr, "Invalid size: %s\n", optarg);
 					return EINVAL;
-				} else {
-					file_size = atoi(optarg);
-					if (file_size < 1) {
-						fprintf(stderr, "Size must be greater than 0\n");
-						return EINVAL;
-					}
 				}
 				break;
 			case 'b':
-				if (!is_uint_string(optarg)) {
+				buffer_size = parse_int(optarg);
+				if (buffer_size < 2) {
 					fprintf(stderr, "Invalid buffer size: %s\n", optarg);
 					return EINVAL;
-				} else {
-					buffer_size = atoi(optarg);
-					if (buffer_size < 2) {
-						fprintf(stderr, "Invalid buffer size: %s\n", optarg);
-						return EINVAL;
-					}
 				}
 				break;
 			case 'h': return usage(cmd);
@@ -112,13 +104,20 @@ int main(int argc, char *argv[]) {
 	argc -= optind;
 	argv += optind;
 
-	if (file_size < 1) {
+	if (n_units == -1.0f) {
 		fprintf(stderr, "Size must be specified with the -s parameter\n");
 		fprintf(stderr, "\nRun '%s -h' for more information\n", cmd);
 		return EINVAL;
 	}
 
+	file_size = n_units * 1e6;
 	file_size *= multiplier;
+	file_size /= 1e6;
+
+	if (file_size == 0) {
+		fprintf(stderr, "Size must be larger than 0 bytes\n");
+		return EINVAL;
+	}
 
 	if (file_name == NULL) {
 		/* write to stdout by default */
@@ -176,21 +175,26 @@ exit_error:
 	return -errno;
 }
 
-static int is_uint_string(const char *s_int) {
-	int i, n_chars;
-	char c;
+static int parse_int(const char *s_int) {
+	int n_int;
 
-	n_chars = strlen(s_int);
-
-	for (i = 0; i < n_chars; ++i) {
-		c = s_int[i];
-
-		if (!(c >= '0' && c <= '9')) {
-			return 0;
-		}
+	n_int = atoi(s_int);
+	if (errno == EINVAL) {
+		return -1;
 	}
 
-	return 1;
+	return n_int;
+}
+
+static float parse_float(const char *s_float) {
+	float n_float;
+
+	n_float = atof(s_float);
+	if (errno == EINVAL) {
+		return -1.0f;
+	}
+
+	return n_float;
 }
 
 static int parse_multiplier(const char *s_multiplier) {
