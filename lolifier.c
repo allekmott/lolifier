@@ -14,7 +14,7 @@
 
 #define DEFAULT_BUFFER_SIZE 1024
 
-static long lolify(const char *file_name, long file_size, int buffer_size);
+static long lolify(int fd, long file_size, int buffer_size);
 
 static int is_uint_string(const char *s_int);
 static int parse_multiplier(const char *s_multiplier);
@@ -38,15 +38,16 @@ static int usage(const char *cmd) {
 "\n"
 "Options:\n"
 "-------\n"
-"-o <file>  Write output to <file>\n"
+"-o <file>  Write output to <file>. If not set, will dump to stdout\n"
 "-u <unit>  Desired size unit (default b); b | k[b] | m[b] | g[b]\n"
-"-s <bytes  Number of units to be written (bytes by default)\n"
+"-s <bytes  Number of units to be written (bytes by default) (>1)\n"
 "-b <size>  Buffer size in bytes (>1)\n", cmd);
 
 	return 0;
 }
 
 int main(int argc, char *argv[]) {
+	int fd;
 	const char *file_name;
 	long file_size;
 	int buffer_size, multiplier;
@@ -58,8 +59,8 @@ int main(int argc, char *argv[]) {
 
 	const char *cmd = argv[0];
 
-	file_name = "lol.txt";
-	file_size = 1048576;	/* 1mb */
+	file_name = NULL;
+	file_size = 0;
 
 	buffer_size = DEFAULT_BUFFER_SIZE;
 	multiplier = 1;
@@ -83,7 +84,7 @@ int main(int argc, char *argv[]) {
 				} else {
 					file_size = atoi(optarg);
 					if (file_size < 1) {
-						fprintf(stderr, "Invalid file size: %s\n", optarg);
+						fprintf(stderr, "Size must be greater than 0\n");
 						return EINVAL;
 					}
 				}
@@ -111,11 +112,28 @@ int main(int argc, char *argv[]) {
 	argc -= optind;
 	argv += optind;
 
+	if (file_size < 1) {
+		fprintf(stderr, "Size must be specified with the -s parameter\n");
+		fprintf(stderr, "\nRun '%s -h' for more information\n", cmd);
+		return EINVAL;
+	}
+
 	file_size *= multiplier;
 
-	printf("To write %lu bytes to %s\n", file_size, file_name);
+	if (file_name == NULL) {
+		/* write to stdout by default */
+		fd = fileno(stdout);
+	} else {
+		printf("To write %lu bytes to %s\n", file_size, file_name);
 
-	bytes_written = lolify(file_name, file_size, buffer_size);
+		fd = open(file_name, DEFAULT_FILE_FLAGS, DEFAULT_FILE_MODE);
+		if (fd < 0) {
+			perror("Unable to open file");
+			return errno;
+		}
+	}
+
+	bytes_written = lolify(fd, file_size, buffer_size);
 	if (bytes_written < 0) {
 		perror("Unable to lolify");
 		return -((int) bytes_written);
@@ -124,20 +142,15 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-static long lolify(const char *file_name, long file_size, int buffer_size) {
-	int fd, written, to_write, offset;
+static long lolify(int fd, long file_size, int buffer_size) {
+	int res, written, to_write, offset;
 	long total_written;
-
 	char *buffer;
 
+	res = 0;
+
 	buffer = generate_buffer(buffer_size);
-
 	total_written = written = 0;
-
-	fd = open(file_name, DEFAULT_FILE_FLAGS, DEFAULT_FILE_MODE);
-	if (fd < 0) {
-		return -(errno);
-	}
 
 	while (total_written < file_size) {
 		offset = (total_written % 2 == 0) ? 0 : 1;
