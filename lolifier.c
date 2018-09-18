@@ -6,18 +6,31 @@
  */
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-#define DEFAULT_BUFFER_SIZE = 1024
+#define DEFAULT_BUFFER_SIZE 1024
 
-static int lolify(const char *file_name, long file_size);
+static long lolify(const char *file_name, long file_size, int buffer_size);
 
 static int is_uint_string(const char *s_int);
 static int parse_multiplier(const char *s_multiplier);
-static void fill_buffer(char *buffer, size_t n_chars);
+static char *generate_buffer(size_t size);
+
+static const int DEFAULT_FILE_FLAGS = 
+		O_WRONLY	/* write only */
+		| O_CREAT	/* create if doesn't exist */
+		| O_TRUNC;	/* erase existing contents upon open */
+
+static const mode_t DEFAULT_FILE_MODE =
+		S_IRUSR		/* read for user */
+		| S_IWUSR	/* write for user */
+		| S_IRGRP	/* read for group */
+		| S_IWGRP	/* write for group */
+		| S_IROTH;	/* read for other users */
 
 static int usage(const char *cmd) {
 	printf(
@@ -38,6 +51,8 @@ int main(int argc, char *argv[]) {
 	long file_size;
 	int buffer_size, multiplier;
 
+	long bytes_written;
+
 	char flag;
 	extern int optind, optopt;
 
@@ -46,6 +61,7 @@ int main(int argc, char *argv[]) {
 	file_name = "lol.txt";
 	file_size = 1048576;	/* 1mb */
 
+	buffer_size = DEFAULT_BUFFER_SIZE;
 	multiplier = 1;
 
 	while ((flag = getopt(argc, argv, "o:u:s:b:h")) != -1) {
@@ -95,12 +111,56 @@ int main(int argc, char *argv[]) {
 	argc -= optind;
 	argv += optind;
 
+	file_size *= multiplier;
+
 	printf("To write %lu bytes to %s\n", file_size, file_name);
-	return lolify(file_name, file_size);
+
+	bytes_written = lolify(file_name, file_size, buffer_size);
+	if (bytes_written < 0) {
+		perror("Unable to lolify");
+		return -((int) bytes_written);
+	}
+
+	return 0;
 }
 
-static int lolify(const char *file_name, long file_size) {
-	return 0;
+static long lolify(const char *file_name, long file_size, int buffer_size) {
+	int fd, written, to_write, offset;
+	long total_written;
+
+	char *buffer;
+
+	buffer = generate_buffer(buffer_size);
+
+	total_written = written = 0;
+
+	fd = open(file_name, DEFAULT_FILE_FLAGS, DEFAULT_FILE_MODE);
+	if (fd < 0) {
+		return -(errno);
+	}
+
+	while (total_written < file_size) {
+		offset = (total_written % 2 == 0) ? 0 : 1;
+		to_write = file_size - total_written;
+
+		if (to_write > buffer_size) {
+			to_write = buffer_size - offset;
+		}
+
+		written = write(fd, (buffer + offset), to_write);
+		if (written < 0) {
+			goto exit_error;
+		}
+
+		total_written += written;
+	}
+
+	close(fd);
+	return total_written;
+
+exit_error:
+	close(fd);
+	return -errno;
 }
 
 static int is_uint_string(const char *s_int) {
@@ -132,6 +192,18 @@ static int parse_multiplier(const char *s_multiplier) {
 	}
 }
 
-static void fill_buffer(char *buffer, size_t n_chars) {
+static char *generate_buffer(size_t size) {
+	char *buf;
+	int i;
 
+	buf = malloc(size);
+	if (buf == NULL) {
+		return NULL;
+	}
+
+	for (i = 0; i < size; ++i) {
+		buf[i] = (i % 2 == 0) ? 'l' : 'o';
+	}
+
+	return buf;
 }
