@@ -19,7 +19,7 @@ static long lolify(int fd, long file_size, int buffer_size);
 static int parse_int(const char *s_int);
 static float parse_float(const char *s_float);
 static int parse_multiplier(const char *s_multiplier);
-static char *generate_buffer(size_t size);
+static char *generate_buffer(int size);
 
 static const int DEFAULT_FILE_FLAGS = 
 		O_WRONLY	/* write only */
@@ -198,8 +198,6 @@ static float parse_float(const char *s_float) {
 }
 
 static int parse_multiplier(const char *s_multiplier) {
-	int n_multiplier = 1;
-
 	switch (s_multiplier[0]) {
 		case 'b': return 1;
 		case 'k': return 1024;
@@ -209,7 +207,7 @@ static int parse_multiplier(const char *s_multiplier) {
 	}
 }
 
-static char *generate_buffer(size_t size) {
+static char *generate_buffer(int size) {
 	char *buf;
 	int i;
 
