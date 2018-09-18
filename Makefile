@@ -1,12 +1,12 @@
 
 CC=gcc
-CFLAGS=-Wall
+CFLAGS=-Wall -Wextra
 
 EXE=lolifier
 
 .PHONY: all
 all:
-	$(CC) -o $(EXE) lolifier.c
+	$(CC) $(CFLAGS) -o $(EXE) lolifier.c
 
 .PHONY: clean
 clean:
