@@ -14,14 +14,14 @@
 
 #define DEFAULT_BUFFER_SIZE 1024
 
-static long lolify(int fd, long file_size, int buffer_size);
+static size_t lolify(int fd, size_t file_size, size_t buffer_size);
 
-static int parse_int(const char *s_int);
+static size_t parse_uint(const char *s_int);
 static float parse_float(const char *s_float);
-static int parse_multiplier(const char *s_multiplier);
-static char *generate_buffer(int size);
+static unsigned int parse_multiplier(const char *s_multiplier);
+static char *generate_buffer(size_t size);
 
-static const int DEFAULT_FILE_FLAGS = 
+static const int DEFAULT_FILE_FLAGS =
 		O_WRONLY	/* write only */
 		| O_CREAT	/* create if doesn't exist */
 		| O_TRUNC;	/* erase existing contents upon open */
@@ -39,10 +39,10 @@ static int usage(const char *cmd) {
 "\n"
 "Options:\n"
 "-------\n"
-"-o <file>  Write output to <file>. If not set, will dump to stdout\n"
-"-u <unit>  Desired size unit (default b); b | k[b] | m[b] | g[b]\n"
-"-s <bytes  Number of units to be written (bytes by default) (>1)\n"
-"-b <size>  Buffer size in bytes (>1)\n", cmd);
+"-o <file>   Write output to <file>. If not set, will dump to stdout\n"
+"-u <unit>   Desired size unit (default b); b | k[b] | m[b] | g[b]\n"
+"-s <bytes>  Number of units to be written (bytes by default) (>1)\n"
+"-b <size>   Buffer size in bytes (>1)\n", cmd);
 
 	return 0;
 }
@@ -50,11 +50,12 @@ static int usage(const char *cmd) {
 int main(int argc, char *argv[]) {
 	int fd;
 	const char *file_name;
-	int buffer_size, multiplier;
 
+	size_t buffer_size;
+	int multiplier;
 	float n_units;
-	long file_size;
-	long bytes_written;
+	size_t file_size;
+	size_t bytes_written;
 
 	char flag;
 	extern int optind, optopt;
@@ -74,7 +75,7 @@ int main(int argc, char *argv[]) {
 				break;
 			case 'u':
 				multiplier = parse_multiplier(optarg);
-				if (multiplier == -1) {
+				if (multiplier == 0) {
 					fprintf(stderr, "Invalid unit: %s\n", optarg);
 					return EINVAL;
 				}
@@ -87,7 +88,7 @@ int main(int argc, char *argv[]) {
 				}
 				break;
 			case 'b':
-				buffer_size = parse_int(optarg);
+				buffer_size = parse_uint(optarg);
 				if (buffer_size < 2) {
 					fprintf(stderr, "Invalid buffer size: %s\n", optarg);
 					return EINVAL;
@@ -133,24 +134,27 @@ int main(int argc, char *argv[]) {
 	}
 
 	bytes_written = lolify(fd, file_size, buffer_size);
-	if (bytes_written < 0) {
+	if (bytes_written == 0) {
 		perror("Unable to lolify");
-		return -((int) bytes_written);
+		return errno;
 	}
 
 	return 0;
 }
 
-static long lolify(int fd, long file_size, int buffer_size) {
-	int res, written, to_write, offset;
-	long total_written;
+static size_t lolify(int fd, size_t file_size, size_t buffer_size) {
+	int res;
+	size_t total_written, written, to_write, offset;
 	char *buffer;
 
 	res = 0;
 
 	buffer = generate_buffer(buffer_size);
-	total_written = written = 0;
+	if (buffer == NULL) {
+		goto exit_error;
+	}
 
+	total_written = written = 0;
 	while (total_written < file_size) {
 		offset = (total_written % 2 == 0) ? 0 : 1;
 		to_write = file_size - total_written;
@@ -172,13 +176,13 @@ static long lolify(int fd, long file_size, int buffer_size) {
 
 exit_error:
 	close(fd);
-	return -errno;
+	return 0;
 }
 
-static int parse_int(const char *s_int) {
+static size_t parse_uint(const char *s_int) {
 	int n_int;
 
-	n_int = atoi(s_int);
+	n_int = strtoul(s_int, NULL, 0);
 	if (errno == EINVAL) {
 		return -1;
 	}
@@ -189,36 +193,36 @@ static int parse_int(const char *s_int) {
 static float parse_float(const char *s_float) {
 	float n_float;
 
-	n_float = atof(s_float);
+	n_float = strtof(s_float, NULL);
 	if (errno == EINVAL) {
-		return -1.0f;
+		return 0.0f;
 	}
 
 	return n_float;
 }
 
-static int parse_multiplier(const char *s_multiplier) {
+static unsigned int parse_multiplier(const char *s_multiplier) {
 	switch (s_multiplier[0]) {
 		case 'b': return 1;
 		case 'k': return 1024;
 		case 'm': return 1048576;
 		case 'g': return 1073741824;
-		default: return -1;
+		default: return 0;
 	}
 }
 
-static char *generate_buffer(int size) {
-	char *buf;
-	int i;
+static char *generate_buffer(size_t size) {
+	char *buffer;
+	unsigned int i;
 
-	buf = malloc(size);
-	if (buf == NULL) {
+	buffer = calloc(size, sizeof(char));
+	if (buffer == NULL) {
 		return NULL;
 	}
 
 	for (i = 0; i < size; ++i) {
-		buf[i] = (i % 2 == 0) ? 'l' : 'o';
+		buffer[i] = (i % 2 == 0) ? 'l' : 'o';
 	}
 
-	return buf;
+	return buffer;
 }
